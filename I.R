@@ -1,5 +1,5 @@
 # PRÁCTICA 1 : CONTRASTES NO PARAMÉTRICOS CLÁSICOS ----
-# P1 - CONTRASTE DE SIGNOS PARA LA MEDIANA ----
+# P1 - CONTRASTE DE SIGNOS PARA LA MEDIANA ---- 
 
 # Ejemplo: Los tiempos de supervivencia, en semanas, de n = 10 pacientes con un tipo de linfoma
 # fueron 49, 58, 75, 110, 112, 132, 151, 276, 281, 362. Contrastar si puede suponerse que la
