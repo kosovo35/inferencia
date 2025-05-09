@@ -1,5 +1,5 @@
 # PRÁCTICA 1 : CONTRASTES NO PARAMÉTRICOS CLÁSICOS ----
-# P1 - CONTRASTE DE SIGNOS PARA LA MEDIANA ---- 
+# P1 - CONTRASTE DE SIGNOS PARA LA MEDIANA ----
 
 # Ejemplo: Los tiempos de supervivencia, en semanas, de n = 10 pacientes con un tipo de linfoma
 # fueron 49, 58, 75, 110, 112, 132, 151, 276, 281, 362. Contrastar si puede suponerse que la
@@ -247,122 +247,136 @@ chisq.test(tabla_contingencia)
 # -----------------------------------------------------------------------
 # PRÁCTICA 2 : ESTIMACIÓN NO PARAMÉTRICA DE LA DENSIDAD ----
 
-# Los datos de tiempo de erupción del geyser Old Faithful son la primera variable de la tabla
-# de datos faithful
-
 f1 <- faithful$eruptions
 
-# Histogramas
-
-# La función que calcula y dibuja los histogramas en R es hist
-
-# La opción breaks sirve para especificar los valores donde empiezan y acaban las cajas, si es
-# que le proporcionamos un vector de valores ordenados
-
-# También se le puede decir el número de cajas
-
-# También admite que le especifiquemos el nombre de alguna de las reglas clásicas: 
-# "Sturges" (valor por defecto), o "Scott"
-
-# En el caso de que le especifiquemos un número de cajas, puede que no utilice exactamente ese
-# número de cajas, porque realiza cierto "redondeo" mediante la función pretty()
-
-# Por defecto, la altura de las cajas representa frecuencias absolutas. Si queremos que el
-# histograma sea un estimador de la densidad hay que especificar probability=TRUE
-
-{
-  windows()
-  hist(x = f1, probability = TRUE, xlab = "Tiempo de erupción", ylab = "Densidad",
-    main = "Regla de Sturges", xlim = c(1, 6), ylim = c(0, 0.7) )
-  rug(f1)
-}
-
-#### SI NO SE LE DICE NADA, EL HISTOGRAMA COGE LAS PROBABILIDADES ABSOLUTAS
-
-{
-  windows()
-  h <- hist(x = f1, breaks = "Scott", probability = TRUE, xlab = "Tiempo de erupción",
-    ylab = "Densidad", main = "Regla de Scott", xlim = c(1, 6), ylim = c(0, 0.7) )
-  rug(f1)
-}
-
-#### CAJAS QUE NECESITAS CON STURGES
+# P2 - REGLA DE STURGES (POR DEFECTO) ----
 nclass.Sturges(f1)
+{
+  windows()
+  hist(
+    x=f1,
+    probability=TRUE,
+    xlab="Tiempo de erupción",
+    ylab="Densidad",
+    main="Regla de Sturges",
+    xlim=c(1, 6),
+    ylim=c(0, 0.7)
+  )
+  rug(f1)
+}
 
-#### CAJAS QUE NECESITAS CON SCOTT
+# P2 - REGLA DE SCOTT ----
 nclass.scott(f1)
+{
+  windows()
+  h <- hist(
+    x=f1,
+    breaks="Scott",
+    probability=TRUE,
+    xlab="Tiempo de erupción",
+    ylab="Densidad",
+    main="Regla de Scott",
+    xlim=c(1, 6),
+    ylim=c(0, 0.7)
+  )
+  rug(f1)
+}
 
-# La regla de Wand para elegir el ancho de caja podemos encontrarla en el paquete KernSmooth
-
+# P2 - REGLA DE WAND ----
 library(KernSmooth)
-b <- dpih(x = f1)
+
+# Ancho de caja
+b <- dpih(x=f1)
+
+# Definimos las cajas
 cajas <- seq(min(f1), max(f1)+b, by=b)
-
-#### LA VARIABLE cajas SON LOS PUNTOS DONDE VAMOS A CALCULAR LOS INTERVALOS PARA EL HISTOGRAMA
-
 {
   windows()
-  h <- hist(x = f1, breaks = cajas, probability = TRUE, xlab = "Tiempo de erupción",
-    ylab = "Densidad", main = "Regla de Wand", xlim = c(1, 6), ylim = c(0, 0.7) )
+  h <- hist(
+    x=f1,
+    breaks=cajas,
+    probability=TRUE,
+    xlab="Tiempo de erupción",
+    ylab="Densidad",
+    main="Regla de Wand",
+    xlim=c(1, 6),
+    ylim=c(0, 0.7)
+  )
   rug(f1)
 }
 
-#### ESTIMACIÓN CON EL ANCHO DE CAJA CON LA REGLA DE WAND
+## Cogemos el triple de cajas que antes (veremos que son demasiadas cajas y no es correcto)
 cajas <- seq(min(f1), max(f1)+b, by=b/3)
-
 {
   windows()
-  h <- hist(x = f1, breaks = cajas, probability = TRUE, xlab = "Tiempo de erupci?n",
-    ylab = "Densidad", main = "Regla de Wand", xlim = c(1, 6), ylim = c(0, 0.7) )
+  h <- hist(
+    x=f1,
+    breaks=cajas,
+    probability=TRUE,
+    xlab="Tiempo de erupción",
+    ylab="Densidad",
+    main="Regla de Wand",
+    xlim=c(1, 6),
+    ylim=c(0, 0.7)
+  )
   rug(f1)
 }
 
-#### EN ESTE CASO HEMOS COGIDO DEMASIADAS CAJAS, Y POR LO TANTO NO ESTÁ BIEN HECHO EL HISTOGRAMA
+# P2 - ESTIMACIÓN NÚCLEO DE LA DENSIDAD ----
 
+# density(x, bw, kernel="gaussian", n=512, from, to, cut=3)
 
-# Ejercicio: construir los histogramas con las 3 reglas de selección de ancho de caja para la
-# tabla de datos incomeUK del paquete densEstBayes
-
-### Estimación núcleo de la densidad
-
-# La función básica para Estimación de densidades en R es density
-# La sintaxis de density es density(x, bw, kernel="gaussian", n=512, from, to, cut=3)
-
-# x es el vector de datos
-# bw es el ancho de banda (por defecto, la referencia normal de Silverman)
-# kernel es el núcleo usado (por defecto, el gaussiano o normal)
 # density calcula el estimador de la densidad en una rejilla de n=512 puntos que van desde
-# from - cut*bw hasta to + cut*bw ( por defecto, from=min(x) y  to=max(x) )
+# -cut*bw hasta +cut*bw ( por defecto, from=min(x) y to=max(x) )
 
-d <- density(x = f1, bw = 0.2)
+# bw por defecto, la referencia normal de Silverman
+# kernel por defecto, el gaussiano o normal
+
+d <- density(x=f1, bw=0.2)
 {
   windows()
-  plot(d, t="l", xlab="Tiempo de erupción", ylab="Densidad", main="h=0.2",
-    xlim = c(1, 6), ylim = c(0, 0.7))
+  plot(
+    d,
+    t="l",
+    xlab="Tiempo de erupción",
+    ylab="Densidad",
+    main="h=0.2",
+    xlim = c(1, 6),
+    ylim = c(0, 0.7)
+  )
   rug(f1)
 }
 
-# Los selectores de ancho de banda por referencia normal, plug-in y por  validación cruzada
-# pueden encontrarse en el paquete ks
+# P2 - SELECTORES DE ANCHOS DE BANDA ----
 
 library(ks)
+
+# Referencia normal
 h1 <- hns(f1)
+
 #### ANCHO DE BANDA POR REFERENCIA NORMAL (COGE LA CURVATURA COMO SI FUERA UNA NORMAL, PERO LA
 #### NORMAL ES MÁS SUAVE QUE LA DENSIDAD QUE NOSOTROS ESTAMOS ESTIMANDO. COMO LA CURVATURA ES
 #### MÁS PEQUEÑA, OBTENEOMS UN h MÁS GRANDE, LO CUAL LLAMAMOS h SOBRESUAVIZADA)
 
+# Validación cruzada
 h2 <- hlscv(f1)
+
 #### ANCHO DE BANDA POR VALIDACIÓN CRUZADA (ESCRIBIMOS bw.ucv=FALSE PARA QUE NO COJA POR DEFECTO
 #### EL ANCHO DE BANDA DE bw.ucv) 
 
+# Plug-in
 h3 <- hpi(f1)
 #### ANCHO DE BANDA plug-in
 
 {
   windows()
-  plot(density(f1, bw=h2), t="l", lwd=2, col="red", xlab="Tiempo de erupción", 
-    ylab="Densidad", main="Selectores", xlim = c(1, 6), ylim = c(0, 0.7))
-  
+  plot(
+    density(f1, bw=h2),
+    t="l", lwd=2, col="red",
+    xlab="Tiempo de erupción", ylab="Densidad", main="Selectores",
+    xlim = c(1, 6),
+    ylim = c(0, 0.7)
+  )
   lines(density(f1, bw=h1), lwd=2, col="orange")
   lines(density(f1, bw=h3), lwd=2, col="blue")
   rug(f1)
@@ -374,7 +388,7 @@ h3 <- hpi(f1)
 #### QUE PARECE DEMASIADO ARTIFICIAL
 
 # Ejemplo por simulación: generamos una muestra de tamaño 1000 de la densidad
-# (3/4) N(0, 1) + (1/4) N(1.5, 1/3^2) y pintamos el estimador núcleo con el selector plug-in de
+# (3/4) N(0,1) + (1/4) N(1.5,1/3^2) y pintamos el estimador núcleo con el selector plug-in de
 # ancho de banda, y añadimos la verdadera densidad
 
 set.seed(1)
@@ -409,6 +423,8 @@ d <- density(muestra, bw=h3)
 
 #### AHORA OBSERVAMOS QUE HAY CIERTAS OSCILACIONES QUE SON UN POCO ARTIFICIALES, POR LO TANTO,
 #### PODRÍA MEJORARSE EL ANCHO DE BANDA
+
+# P2 - BANDAS DE VARIABILIDAD ----
 
 # Las bandas de variabilidad están implementadas en el paquete sm
 # Con la opción panel=TRUE en sm.density se controla el suavizado de manera manual e interactiva
@@ -463,6 +479,7 @@ fhat <- kde(x=datos, H=H)
   points(datos, pch=21, bg="blue")
 }
 
+# P2 - ANÁLISIS DISCRIMINANTE NO PARAMÉTRICO BASADO EN ESTIMADORES NÚCLEO ----
 # El análisis discriminante no paramétrico basado en estimadores núcleo de la  densidad está
 # implementado en la función kda del paquete ks
 
