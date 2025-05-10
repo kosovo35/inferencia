@@ -1,5 +1,3 @@
-# PAULO MARIQUITA
-
 # PRÁCTICA 1 : CONTRASTES NO PARAMÉTRICOS CLÁSICOS ----
 # P1 - CONTRASTE DE SIGNOS PARA LA MEDIANA ----
 
@@ -109,7 +107,7 @@ friedman.test(datos_impresora)
 # Como se observan diferencias significativas entre las impresoras, realizamos las comparaciones
 # múltiples usando el contraste exacto de Elsinga-Heskes-Pelzer-Grotenhuis (EHPG)
 
-frdAllPairsExactTest(datosimp)
+frdAllPairsExactTest(datos_impresora)
 
 # Vemos que sólo hay diferencias significativas entre la impresora 1 y la impresora 3
 
@@ -203,7 +201,7 @@ chisq.test(x = freq_obs)
 
 freq_obs <- c(8, 6, 11, 5, 8)
 media <- (1*6 + 2*11 + 3*5 + 4*5 + 5*1 + 6*2)/38
-probabilidades <- c(dpois(0:3, lambda=media), 1 - ppois(3, media))
+probabilidades <- c(dpois(0:3, lambda=media), 1 - ppois(3, lambda=media))
 estadistico <- chisq.test(x=freq_obs, p=probabilidades)$statistic ; estadistico
 valor_chi <- qchisq(p=1-0.05, df=5-1-1) ; valor_chi
 
@@ -326,13 +324,8 @@ cajas <- seq(min(f1), max(f1)+b, by=b/3)
 
 # P2 - ESTIMACIÓN NÚCLEO DE LA DENSIDAD ----
 
-# density(x, bw, kernel="gaussian", n=512, from, to, cut=3)
-
-# density calcula el estimador de la densidad en una rejilla de n=512 puntos que van desde
-# -cut*bw hasta +cut*bw ( por defecto, from=min(x) y to=max(x) )
-
-# bw por defecto, la referencia normal de Silverman
-# kernel por defecto, el gaussiano o normal
+# bw por defecto es la referencia normal de Silverman
+# kernel por defecto es el gaussiano o normal
 
 d <- density(x=f1, bw=0.2)
 {
@@ -349,26 +342,18 @@ d <- density(x=f1, bw=0.2)
   rug(f1)
 }
 
-# P2 - SELECTORES DE ANCHOS DE BANDA ----
+# P2 - SELECTORES DE ANCHOS DE BANDA PARA EL ESTIMADOR NÚCLEO DE LA DENSIDAD ----
 
 library(ks)
 
-# Referencia normal
+# Ancho de banda por referencia normal
 h1 <- hns(f1)
 
-#### ANCHO DE BANDA POR REFERENCIA NORMAL (COGE LA CURVATURA COMO SI FUERA UNA NORMAL, PERO LA
-#### NORMAL ES MÁS SUAVE QUE LA DENSIDAD QUE NOSOTROS ESTAMOS ESTIMANDO. COMO LA CURVATURA ES
-#### MÁS PEQUEÑA, OBTENEOMS UN h MÁS GRANDE, LO CUAL LLAMAMOS h SOBRESUAVIZADA)
-
-# Validación cruzada
+# Ancho de banda por validación cruzada
 h2 <- hlscv(f1)
 
-#### ANCHO DE BANDA POR VALIDACIÓN CRUZADA (ESCRIBIMOS bw.ucv=FALSE PARA QUE NO COJA POR DEFECTO
-#### EL ANCHO DE BANDA DE bw.ucv) 
-
-# Plug-in
+# Ancho de banda por plug-in
 h3 <- hpi(f1)
-#### ANCHO DE BANDA plug-in
 
 {
   windows()
@@ -389,7 +374,7 @@ h3 <- hpi(f1)
 #### VISTO ESTO, DEBERÍAMOS AUMENTAR UN POCO EL ANCHO DE BANDA, AL MENOS PARA ELIMINAR ESA SUBIDA
 #### QUE PARECE DEMASIADO ARTIFICIAL
 
-# Ejemplo por simulación: generamos una muestra de tamaño 1000 de la densidad
+# Ejemplo por simulación: generamos una muestra de tamaño 100 de la densidad
 # (3/4) N(0,1) + (1/4) N(1.5,1/3^2) y pintamos el estimador núcleo con el selector plug-in de
 # ancho de banda, y añadimos la verdadera densidad
 
@@ -402,7 +387,8 @@ d <- density(muestra, bw=h3)
 {
   windows()
   plot(d$x, 0.75*dnorm(d$x, mean=0, sd=1) + 0.25*dnorm(d$x, mean=1.5, sd=1/3), 
-    t="l", lwd=3, xlab="x", ylab="f(x)", main="")
+    t="l", lwd=3,
+    xlab="x", ylab="f(x)", main="")
   lines(d, lwd=2, col="blue")
   lines(density(muestra, bw=h2), lwd=2, col="red")
 }
@@ -428,13 +414,17 @@ d <- density(muestra, bw=h3)
 
 # P2 - BANDAS DE VARIABILIDAD ----
 
-# Las bandas de variabilidad están implementadas en el paquete sm
 # Con la opción panel=TRUE en sm.density se controla el suavizado de manera manual e interactiva
 
 library(sm)
 {
   windows()
-  sm.density(f1, h=hpi(f1), se=TRUE, xlim=c(1, 6), ylim=c(0, 0.7))
+  sm.density(
+    f1,
+    h=hpi(f1),
+    se=TRUE,
+    xlim=c(1, 6), ylim=c(0, 0.7)
+  )
 }
 
 library(tkrplot)
@@ -446,8 +436,8 @@ library(tkrplot)
 #### CON ESTO PODEMOS MOVER EL ANCHO DE BANDA Y ASÍ VER CUÁL ES EL QUE MEJOR NOS CONVIENE Y
 #### PODER SELECCIONARLO A OJO DE LA MEJOR MANERA POSIBLE
 
-#### TAL Y COMO PODEMOS VER MOVIENDO LOS VALORES DE LA H, SI TUVIÉSEMOS QUE SELECCIONAR A OJO
-#### EL ANCHO DE BANDA, LA MEJOR OPCIÓN SERÍA 0.16 O UN POCO MÁS
+#### MOVIENDO LOS VALORES DE LA H, SI TUVIÉSEMOS QUE SELECCIONAR A OJO EL ANCHO DE BANDA, LA
+#### MEJOR OPCIÓN SERÍA 0.16 O UN POCO MÁS
 
 # El estimador núcleo También está implementado en la función kde del paquete ks
 # Con la opción positive=TRUE podemos especificar que se aplique una transformación logarítmica
@@ -464,7 +454,7 @@ fhat <- kde(x = incomeUK, h=hy, positive=TRUE) #### positive=TRUE INDICA QUE LOS
   rug(incomeUK)
 }
 
-# El estimador núcleo multivariante también se puede obtener con la función kde del paquete ks
+# P2 - ESTIMADOR NÚCLEO MULTIVARIANTE ----
 
 datos <- iris[,1:2]
 {
@@ -505,3 +495,283 @@ clas <- kda(datos, etiquetas)
   plot(kms.faith, pch=19, col=c("blue","red"))
   plot(fhat, add=TRUE, drawlabels=FALSE, col="black", cont=10*(1:9))
 }
+
+# -----------------------------------------------------------------------
+# PRACTICA 3 - ESTIMACIÓN DE LA CURVA DE REGRESIÓN ----
+
+# P3 - ESTIMADOR NÚCLEO DE LA REGRESIÓN ----
+
+# La función básica para obtener el estimador núcleo en R es ksmooth, del paquete stats
+# Hay que especificar x, y, kernel="normal" para el núcleo normal, bandwidth
+# y x.points (la rejilla de puntos donde calcula el estimador)
+# Si no se especifica la rejilla, usa una de 100 puntos entre min(x) y max(x)
+
+# Vamos a probarla con un conjunto de datos simulados
+# La función de regresión va a ser m(x)=sin(x)
+# El error va a ser N(0,0.25^2), la distribución de X es uniforme en [0, 2*pi]
+
+set.seed(1)
+m <- function(x){ sin(x) }
+x <- runif(100, min=0, max=2*pi)
+e <- rnorm(100, mean=0, sd=0.25)
+y <- m(x) + e
+windows()
+plot(x,y)
+
+# Calculamos el estimador núcleo con h=1 y lo pintamos
+mhat <- ksmooth(x, y, bandwidth=1, kernel="normal")
+lines(mhat, col="blue", lwd=2)
+
+# Añadimos la verdadera función de regresión
+rejilla <- mhat$x
+lines(rejilla, m(rejilla), lwd=2)
+
+# Para calcular el ancho de banda por validación cruzada existen dos funciones
+# np::npregbw (npregbw en la librería np) y locpol::regCVBwSelC 
+
+library(locpol)
+h1 <- regCVBwSelC(x=x, y=y, deg=0)
+s
+library(np)
+h2 <- npregbw(xdat=x, ydat=y, regtype="lc", bwmethod="cv.ls")
+
+mhat2 <- ksmooth(x, y, bandwidth=h1, kernel="normal")
+lines(mhat2, lwd=2, col="red")
+
+# La librería sm tiene la función sm.regression que, con la opción panel=TRUE,
+# permite ir variando el ancho de banda de manera interactiva
+
+library(sm)
+sm.regression(x=x, y=y, panel=TRUE)
+
+# Otra opción para construir un panel interactivo (con RStudio) es usar la función
+# manipulate, del paquete con el mismo nombre
+
+library(manipulate)
+manipulate({
+  plot(x, y)
+  mhat <- ksmooth(x, y, bandwidth=h, kernel="normal")
+  lines(mhat, col="blue", lwd=2)
+  rejilla <- mhat$x
+  lines(rejilla, m(rejilla), lwd=2)
+}, h = slider(min = 0.01, max = 2, initial = 0.5, step = 0.01))
+
+# Ver m?s ejemplos en https://bookdown.org/egarpor/NP-UC3M/kre-i-kre.html#fig:kreg
+
+# Podemos utilizar el estimador núcleo de la regresión con los datos de Boston
+# donde x=lstat e y=rm
+
+library(MASS)
+data(Boston)
+
+windows()
+plot(Boston$lstat, Boston$rm)
+h <-regCVBwSelC(x=Boston$lstat, y=Boston$rm, deg=0)
+mhat <- ksmooth(x=Boston$lstat, y=Boston$rm, bandwidth=h, kernel="normal")
+lines(mhat, col="red", lwd=2)
+mhat2 <- ksmooth(x=Boston$lstat, y=Boston$rm, bandwidth=3, kernel="normal")
+lines(mhat2, col="blue", lwd=2)
+
+# P3 - ESTIMADOR LINEAL LOCAL ----
+
+# El estimador lineal local podemos encontrarlo implementado en KernSmooth::locpoly,
+# locpol::locLinSmootherC o en np::npreg
+
+# La selección de ancho de banda puede hacerse mediante validación cruzada, con las
+# funciones que ya vimos antes, np::npregbw (indicando regtype="ll") o mediante
+# locpol::regCVBwSelC (indicando deg=1)
+
+# Aunque no lo hemos visto en teoría, existe un selector de tipo plug-in para
+# el estimador lineal local, que se puede calcular mediante KernSmooth::dpill
+# o mediante locpol::pluginBw
+
+# Selector por validación cruzada para regresión lineal local con los datos simulados
+
+hcv1 <- npregbw(xdat=x, ydat=y, regtype="ll", bwmethod="cv.ls")
+hcv2 <- regCVBwSelC(x=x, y=y, deg=1, kernel=gaussK)
+
+# Selector plug-in para regresión lineal local con los datos simulados
+
+library(KernSmooth)
+hpi1 <- dpill(x=x, y=y)
+hpi2 <- pluginBw(x=x, y=y, deg=1, kernel=gaussK) 
+#Salen resultados distintos, m?s fiable dpill
+
+# Pintamos los estimadores lineales locales
+# KernSmooth::locpoly no permite escoger los puntos de evaluación, debe ser una rejilla
+# locpol::locLinSmootherC sí permite escoger los puntos de evaluación, pero quiz?
+# el que mejor funciona es np::npreg
+
+llcv <- npreg(bws = hcv2, txdat = x, tydat = y, exdat=rejilla)
+llpi <- npreg(bws = hpi1, txdat = x, tydat = y, exdat=rejilla)
+windows()
+plot(x, y)
+lines(llcv$eval[,1], llcv$mean, lwd=2, col="red")
+lines(llpi$eval[,1], llpi$mean, lwd=2, col="blue")
+
+# Pintemos ahora los estimadores lineales locales para los datos de Boston
+
+hc <- regCVBwSelC(x=Boston$lstat, y=Boston$rm, deg=1, kernel=gaussK)
+hp <- dpill(x=Boston$lstat, y=Boston$rm)
+
+boston.llcv <- npreg(bws = hc, txdat = Boston$lstat, tydat = Boston$rm, 
+  exdat=mhat$x)
+boston.llpi <- npreg(bws = hp, txdat = Boston$lstat, tydat = Boston$rm, 
+  exdat=mhat$x)
+
+windows()
+plot(Boston$lstat, Boston$rm)
+lines(boston.llcv$eval[,1], boston.llcv$mean, lwd=2, col="red")
+lines(boston.llpi$eval[,1], boston.llpi$mean, lwd=2, col="blue")
+lines(mhat2, col="orange", lwd=2)
+
+# P3 - REGRESOGRAMA ----
+
+# El regresograma est? implementado en la función HoRM::regressogram
+# Hay que especificar, x, y y el n?mero de cajas nbins
+
+library(HoRM)
+r <- regressogram(x=x, y=y, nbins=8)
+windows()
+plot(r)
+
+# El paquete HoRM no tiene funciones para elegir el n?mero de cajas
+# a partir de los datos. Un enfoque m?s actual se puede encontrar en
+# la función binsreg::binsreg
+
+library(binsreg)
+windows()
+b <- binsreg(y, x)
+
+windows()
+bb<-binsreg(rm, lstat, data=Boston)
+
+# Selectores automáticos del n?mero de cajas pueden obtenerse mediante 
+# binsreg::binsregselect
+
+binsregselect(y, x)
+
+
+# P3 - REGRESIÓN LOGÍSTICA LOCAL ----
+
+# Vamos a analizar unos datos reales en los que registra si unos bebés recién
+# nacidos presentaban displasia broncopulmonar o no (variable BPD) en función de 
+# su peso al nacer, en gramos (birthweight). Los datos los podemos conseguir con:
+
+bpd<-read.table(file="http://www.stat.cmu.edu/~larry/all-of-nonpar/=data/bpd.dat",header=TRUE)
+bpd<-as.data.frame(bpd)
+
+# Vamos a comparar el modelo de regresión logística global con el local
+# Podemos obtener el modelo global usando la función glm
+
+rlg<-glm(BPD~birthweight, data=bpd, family = binomial)
+
+windows()
+plot(bpd,pch="|")
+rej <- seq(min(bpd$birthweight),max(bpd$birthweight),length=100)
+y.rlg <- predict(rlg, newdata=data.frame(birthweight=rej), type="resp")
+lines(rej, y.rlg, col="blue", lwd=2)
+
+# La regresión logística local podemos obtenerla con el paquete locfit
+
+library(locfit)
+rll <- locfit(BPD~birthweight, data=bpd)
+lines(rll, col="red", lwd=2)
+
+# Para evaluar el estimador en nuevos puntos hay que usar predict
+# -----------------------------------------------------------------------
+# PRÁCTICA 4 - ESTIMACIÓN POR SPLINES ----
+
+# P4 - REGRESIÓN POR SPLINES ----
+
+# El estimador por splines está en el paquete básico de R, en la función
+# smooth.spline. Hay que especificarle x, y, y el valor spar del parámetro
+# de suavizado (que no es exactamente igual que el lambda de teoría)
+# Si no se especifica spar, lo coge por validación cruzada generalizada (GCV)
+# Alternativamente, se puede especificar lambda
+
+# Generamos los datos del modelo de regresión y=sen(x)+e de la práctica anterior
+# Y pintamos el estimador núcleo inicial calculado, junto con la verdadera regresión
+set.seed(1)
+m <- function(x){ sin(x) }
+x <- runif(100, min=0, max=2*pi)
+e <- rnorm(100, mean=0, sd=0.25)
+y <- m(x) + e
+windows()
+plot(x,y)
+
+mhat <- ksmooth(x, y, bandwidth=1, kernel="normal")
+lines(mhat, col="red", lwd=2)
+rejilla <- mhat$x
+lines(rejilla, m(rejilla), lwd=2)
+
+# Calculamos el spline de suavizado
+
+ss <- smooth.spline(x=x, y=y)
+
+lines(ss, lwd=2, col="blue")
+
+# El valor de lambda utilizado puede recuperarse del objeto creado
+ss$lambda #0.001075831
+
+# Podemos explorar el resultado para distintos valores de lambda
+lines(smooth.spline(x,y,lambda=1e-7), lwd=2, col="pink")
+lines(smooth.spline(x,y,lambda=1), lwd=2, col="orange")
+
+
+# Para calcular el estimador por splines en una rejilla, o en vector de valores x
+# utilizamos predict
+
+predict(ss, x = c(0,0.2,0.8))
+
+# Veamos el resultado para los datos de Boston
+
+library(MASS)
+data(Boston)
+ss2 <- smooth.spline(Boston$lstat, Boston$rm)
+windows()
+plot(Boston$lstat, Boston$rm)
+lines(ss2, lwd=2, col="blue")
+
+# P4 - ESTIMACIÓN DE LA DENSIDAD MEDIANTE SPLINES ----
+
+# El paquete principal para hacer estimación de la densidad mediante splines es
+# logspline, a través de la función del mismo nombre
+# También está incluido en el paquete gss, mediante la función ssden()
+
+library(logspline)
+
+# Recuperemos la estimación de la densidad de eruptions mediante un histograma
+
+f1<-faithful$eruptions
+
+library(KernSmooth)
+b <- dpih(x = f1)
+cajas <- seq(min(f1), max(f1)+b, by=b)
+
+windows()
+h <- hist(x = f1, breaks = cajas, probability = TRUE, xlab = "Tiempo de erupción",
+  ylab = "Densidad", main="", xlim = c(1, 6), ylim = c(0, 1) )
+rug(f1)
+
+f1.spline<-logspline(f1)
+plot(f1.spline,add=TRUE,n=1000,lwd=3)
+
+# Para calcular el valor del estimador en un punto concreto se utiliza dlogspline
+
+dlogspline(2.1, f1.spline)
+
+# Con gss necesitamos especificar un modelo de predicción sin respuesta
+library(gss)
+f1.gss<-ssden(~f1)
+
+xx<-seq(1.6,5.1,length=1000)
+fhat<-dssden(f1.gss,xx)
+lines(xx,fhat,lwd=3, col="blue")
+
+# Comparamos con un estimador núcleo con ancho de banda pequeño
+
+h<-dpik(f1) # 0.165
+
+lines(density(f1,bw=0.05),col="red",lwd=3)
+# -----------------------------------------------------------------------
