@@ -472,6 +472,7 @@ fhat <- kde(x=datos, H=H)
 }
 
 # P2 - ANÁLISIS DISCRIMINANTE NO PARAMÉTRICO BASADO EN ESTIMADORES NÚCLEO ----
+
 # El análisis discriminante no paramétrico basado en estimadores núcleo de la  densidad está
 # implementado en la función kda del paquete ks
 
@@ -502,9 +503,9 @@ clas <- kda(datos, etiquetas)
 # P3 - ESTIMADOR NÚCLEO DE LA REGRESIÓN ----
 
 # La función básica para obtener el estimador núcleo en R es ksmooth, del paquete stats
-# Hay que especificar x, y, kernel="normal" para el núcleo normal, bandwidth
-# y x.points (la rejilla de puntos donde calcula el estimador)
-# Si no se especifica la rejilla, usa una de 100 puntos entre min(x) y max(x)
+# Hay que especificar x, y, kernel="normal" para el núcleo normal, bandwidth y x.points (la rejilla
+# de puntos donde calcula el estimador). Si no se especifica la rejilla, usa una de 100 puntos
+# entre min(x) y max(x)
 
 # Vamos a probarla con un conjunto de datos simulados
 # La función de regresión va a ser m(x)=sin(x)
@@ -538,14 +539,14 @@ h2 <- npregbw(xdat=x, ydat=y, regtype="lc", bwmethod="cv.ls")
 mhat2 <- ksmooth(x, y, bandwidth=h1, kernel="normal")
 lines(mhat2, lwd=2, col="red")
 
-# La librería sm tiene la función sm.regression que, con la opción panel=TRUE,
-# permite ir variando el ancho de banda de manera interactiva
+# La librería sm tiene la función sm.regression que, con la opción panel=TRUE, permite ir variando
+# el ancho de banda de manera interactiva
 
 library(sm)
 sm.regression(x=x, y=y, panel=TRUE)
 
-# Otra opción para construir un panel interactivo (con RStudio) es usar la función
-# manipulate, del paquete con el mismo nombre
+# Otra opción para construir un panel interactivo (con RStudio) es usar la función manipulate,
+# del paquete con el mismo nombre
 
 library(manipulate)
 manipulate({
@@ -556,7 +557,7 @@ manipulate({
   lines(rejilla, m(rejilla), lwd=2)
 }, h = slider(min = 0.01, max = 2, initial = 0.5, step = 0.01))
 
-# Ver m?s ejemplos en https://bookdown.org/egarpor/NP-UC3M/kre-i-kre.html#fig:kreg
+# Ver más ejemplos en https://bookdown.org/egarpor/NP-UC3M/kre-i-kre.html#fig:kreg
 
 # Podemos utilizar el estimador núcleo de la regresión con los datos de Boston
 # donde x=lstat e y=rm
@@ -577,13 +578,12 @@ lines(mhat2, col="blue", lwd=2)
 # El estimador lineal local podemos encontrarlo implementado en KernSmooth::locpoly,
 # locpol::locLinSmootherC o en np::npreg
 
-# La selección de ancho de banda puede hacerse mediante validación cruzada, con las
-# funciones que ya vimos antes, np::npregbw (indicando regtype="ll") o mediante
-# locpol::regCVBwSelC (indicando deg=1)
+# La selección de ancho de banda puede hacerse mediante validación cruzada, con las funciones
+# que ya vimos antes, np::npregbw (indicando regtype="ll") o mediante locpol::regCVBwSelC
+# (indicando deg=1)
 
-# Aunque no lo hemos visto en teoría, existe un selector de tipo plug-in para
-# el estimador lineal local, que se puede calcular mediante KernSmooth::dpill
-# o mediante locpol::pluginBw
+# Aunque no lo hemos visto en teoría, existe un selector de tipo plug-in para el estimador lineal
+# local, que se puede calcular mediante KernSmooth::dpill o mediante locpol::pluginBw
 
 # Selector por validación cruzada para regresión lineal local con los datos simulados
 
@@ -595,12 +595,12 @@ hcv2 <- regCVBwSelC(x=x, y=y, deg=1, kernel=gaussK)
 library(KernSmooth)
 hpi1 <- dpill(x=x, y=y)
 hpi2 <- pluginBw(x=x, y=y, deg=1, kernel=gaussK) 
-#Salen resultados distintos, m?s fiable dpill
+#Salen resultados distintos, más fiable dpill
 
 # Pintamos los estimadores lineales locales
 # KernSmooth::locpoly no permite escoger los puntos de evaluación, debe ser una rejilla
-# locpol::locLinSmootherC sí permite escoger los puntos de evaluación, pero quiz?
-# el que mejor funciona es np::npreg
+# locpol::locLinSmootherC sí permite escoger los puntos de evaluación, pero el que mejor
+# funciona es np::npreg
 
 llcv <- npreg(bws = hcv2, txdat = x, tydat = y, exdat=rejilla)
 llpi <- npreg(bws = hpi1, txdat = x, tydat = y, exdat=rejilla)
@@ -627,17 +627,16 @@ lines(mhat2, col="orange", lwd=2)
 
 # P3 - REGRESOGRAMA ----
 
-# El regresograma est? implementado en la función HoRM::regressogram
-# Hay que especificar, x, y y el n?mero de cajas nbins
+# El regresograma está implementado en la función HoRM::regressogram. Hay que especificar, x, y,
+# y el número de cajas nbins
 
 library(HoRM)
 r <- regressogram(x=x, y=y, nbins=8)
 windows()
 plot(r)
 
-# El paquete HoRM no tiene funciones para elegir el n?mero de cajas
-# a partir de los datos. Un enfoque m?s actual se puede encontrar en
-# la función binsreg::binsreg
+# El paquete HoRM no tiene funciones para elegir el número de cajas a partir de los datos. Un
+# enfoque más actual se puede encontrar en la función binsreg::binsreg
 
 library(binsreg)
 windows()
@@ -646,17 +645,16 @@ b <- binsreg(y, x)
 windows()
 bb<-binsreg(rm, lstat, data=Boston)
 
-# Selectores automáticos del n?mero de cajas pueden obtenerse mediante 
-# binsreg::binsregselect
+# Selectores automáticos del número de cajas pueden obtenerse mediante binsreg::binsregselect
 
 binsregselect(y, x)
 
 
 # P3 - REGRESIÓN LOGÍSTICA LOCAL ----
 
-# Vamos a analizar unos datos reales en los que registra si unos bebés recién
-# nacidos presentaban displasia broncopulmonar o no (variable BPD) en función de 
-# su peso al nacer, en gramos (birthweight). Los datos los podemos conseguir con:
+# Vamos a analizar unos datos reales en los que registra si unos bebés recién nacidos presentaban
+# displasia broncopulmonar o no (variable BPD) en función de su peso al nacer, en gramos
+# (birthweight). Los datos los podemos conseguir con:
 
 bpd<-read.table(file="http://www.stat.cmu.edu/~larry/all-of-nonpar/=data/bpd.dat",header=TRUE)
 bpd<-as.data.frame(bpd)
@@ -679,19 +677,19 @@ rll <- locfit(BPD~birthweight, data=bpd)
 lines(rll, col="red", lwd=2)
 
 # Para evaluar el estimador en nuevos puntos hay que usar predict
+
 # -----------------------------------------------------------------------
 # PRÁCTICA 4 - ESTIMACIÓN POR SPLINES ----
 
 # P4 - REGRESIÓN POR SPLINES ----
 
-# El estimador por splines está en el paquete básico de R, en la función
-# smooth.spline. Hay que especificarle x, y, y el valor spar del parámetro
-# de suavizado (que no es exactamente igual que el lambda de teoría)
-# Si no se especifica spar, lo coge por validación cruzada generalizada (GCV)
-# Alternativamente, se puede especificar lambda
+# El estimador por splines está en el paquete básico de R, en la función smooth.spline. Hay que
+# especificarle x, y, y el valor spar del parámetro de suavizado (que no es exactamente igual
+# que el lambda de teoría). Si no se especifica spar, lo coge por validación cruzada generalizada
+# (GCV). Alternativamente, se puede especificar lambda
 
-# Generamos los datos del modelo de regresión y=sen(x)+e de la práctica anterior
-# Y pintamos el estimador núcleo inicial calculado, junto con la verdadera regresión
+# Generamos los datos del modelo de regresión y=sen(x)+e de la práctica anterior Y pintamos el
+# estimador núcleo inicial calculado, junto con la verdadera regresión
 set.seed(1)
 m <- function(x){ sin(x) }
 x <- runif(100, min=0, max=2*pi)
@@ -719,8 +717,8 @@ lines(smooth.spline(x,y,lambda=1e-7), lwd=2, col="pink")
 lines(smooth.spline(x,y,lambda=1), lwd=2, col="orange")
 
 
-# Para calcular el estimador por splines en una rejilla, o en vector de valores x
-# utilizamos predict
+# Para calcular el estimador por splines en una rejilla, o en vector de valores x utilizamos
+# predict
 
 predict(ss, x = c(0,0.2,0.8))
 
@@ -735,9 +733,9 @@ lines(ss2, lwd=2, col="blue")
 
 # P4 - ESTIMACIÓN DE LA DENSIDAD MEDIANTE SPLINES ----
 
-# El paquete principal para hacer estimación de la densidad mediante splines es
-# logspline, a través de la función del mismo nombre
-# También está incluido en el paquete gss, mediante la función ssden()
+# El paquete principal para hacer estimación de la densidad mediante splines es logspline, a
+# través de la función del mismo nombre. También está incluido en el paquete gss, mediante la
+# función ssden()
 
 library(logspline)
 
@@ -774,4 +772,90 @@ lines(xx,fhat,lwd=3, col="blue")
 h<-dpik(f1) # 0.165
 
 lines(density(f1,bw=0.05),col="red",lwd=3)
+# -----------------------------------------------------------------------
+# PRÁCTICA 5 - MODELOS ADITIVOS GENERALIZADOS ----
+
+# P5 - REGRESIÓN MÚLTIPLE ----
+
+# El paquete np permite obtener los estimadores por regresión tipo núcleo o tipo lineal local
+# con varios predictores. Basta especificar las variables predictoras en el modelo de regresión.
+# El estimador núcleo se obtiene con regtype="lc" y el estimador lineal local con regtype="ll"
+
+library(np)
+library(MASS)
+data(Boston)
+
+bw <- npregbw(rm ~ lstat + age, data=Boston, regtype = "ll")
+boston.ll <- npreg(bw)
+
+# Al pintar el objeto anterior se obtiene un gráfico dinámico
+windows()
+plot(boston.ll)
+
+# Para pintar el estimador también podemos utilizar una rejilla de 20 x 20 puntos respecto a las
+# variables predictoras lstat y age, donde evaluamos el estimador
+
+xs <- seq(0, 40, by = 2)
+ys <- seq(0, 100, by = 5)
+xys <- expand.grid(xs, ys)
+
+boston.ll2 <- npreg(bws=bw$bw, txdat=cbind(Boston$lstat, Boston$age),
+  tydat=Boston$rm, regtype="ll", exdat=xys)
+
+zs <- matrix(boston.ll2$mean, nrow=length(xs), ncol=length(ys))
+
+windows()
+persp(xs, ys, zs, theta=40, d=4, xlab="lstat", ylab="age", zlab="rm",
+  ticktype="detailed", lwd=2, main="regresión lineal local")
+
+# P5 - MODELOS ADITIVOS GENERALIZADOS ----
+
+# Existen dos paquetes muy elaborados para trabajar con modelos aditivos generalizados: gam
+# (de Trevor Hastie, uno de sus inventores) y mgcv (de Simon Wood, uno de los investigadores
+# recientes)
+
+# En el paquete gam, la función principal también se llama gam. Se utiliza la fórmula habitual
+# de la forma respuesta~predictores, pero hay que indicar qué tipo de método de suavizado se
+# quiere utilizar con cada predictor: lo (lineal local) o s (spline). Se puede especificar el
+# parámetro de suavizado con lo(x, h) o s(x, lambda) o utilizar los valores por defecto (no por
+# GCV)
+
+# Para modelos aditivos (no generalizados) se especifica family=gaussian (o nada)
+
+library(gam)
+boston.gam <- gam(rm~lo(lstat)+lo(age), data=Boston)
+windows()
+plot(boston.gam, ask=TRUE)
+
+zs2 <- predict(boston.gam, newdata=data.frame(lstat=xys[,1], age=xys[,2]))
+zs2 <- matrix(zs2, nrow=length(xs), ncol=length(ys))
+
+windows()
+persp(xs, ys, zs2, theta=40, d=4, xlab="lstat", ylab="age", zlab="rm",
+  ticktype="detailed", lwd=2, main="Modelo aditivo lineal local")
+
+# En el paquete mgcv la función también se llama gam, pero tiene distintas posibilidades: sólo
+# admite ajuste de las componentes por splines y utiliza  por defecto GCV para escoger los
+# parámetros de suavizado
+
+library(mgcv)
+g <- gam(rm~s(lstat)+s(age), data=Boston)
+
+windows()
+plot(g, se=FALSE, lwd=2)
+
+# podríamos pintar la superficie de regresión en 3D como en el caso anterior, utilizando predict
+
+# Para ajustar un modelo aditivo logístico tenemos que especificar family=binomial. Veamos cómo
+# realizar el análisis de los datos de pacientes diabéticos
+
+
+library(gss)
+data(wesdr)
+
+lg <- gam(ret~s(dur)+s(gly)+s(bmi), data=wesdr, family=binomial)
+
+windows();
+plot(lg, pages=3, se=FALSE, lwd=2)
+
 # -----------------------------------------------------------------------
