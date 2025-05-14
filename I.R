@@ -850,3 +850,284 @@ windows();
 plot(lg, pages=3, se=FALSE, lwd=2)
 
 # -----------------------------------------------------------------------
+
+# 2023 MAYO ----
+
+# EJERCICIO 1
+
+# El conjunto de datos tempb del paquete ks contiene la variable tmax, que registra las
+# temperaturas máximas registradas a lo largo de n=21908 días en Badajoz, en grados centígrados.
+
+# En primer lugar, cargaremos los datos mencionados
+library(ks)
+data(tempb)
+tmax <- tempb$tmax
+
+# Realizamos un histograma con la regla de Scott para hacernos una idea de cómo son los datos
+{
+ windows()
+ hist(
+  x=tmax,
+  breaks="Scott",
+  probability=TRUE,
+  main="Histograma con la regla de Scott",
+  xlab="Temperatura máxima",
+  ylab="Densidad"
+ )
+}
+
+# EJ 1 A)
+# Representa gráficamente la estimación de la densidad de dichos datos mediante un estimador
+# núcleo, utilizando el método de validación cruzada para elegir el ancho de banda. ¿Te parece
+# que la estimación de la densidad así obtenida está suficientemente suavizada?
+
+# Calculamos el ancho de banda mediante el método de validación cruzada
+h_vc <- hlscv(x=tmax)
+
+# Estimamos la densidad mediante el estimador núcleo (núcleo Gaussiano es el que usa por defecto)
+# y con el ancho de banda calculado por validación cruzada
+d1 <- density(
+ x=tmax,
+ bw=h_vc
+)
+
+# Representamos el estimador núcleo de la densidad
+{windows()
+ plot(
+  d1,
+  main = "Estimador núcleo, ancho de banda VC", xlab="Temperatura máxima", ylab="Densidad"
+ )}
+
+# Respuesta: No. Creo que la estimación de la densidad mediante el estimador núcleo y con el
+# ancho de banda calculado por validación cruzada no está suficientemente suavizada, puesto que
+# presenta mucha rugosidad, lo que sugiere que el ancho de banda es demasiado pequeño y está
+# sobreajustando la densidad.
+
+# EJ 1 B)
+# Repite el apartado anterior, pero esta vez utilizando el método plug-in para elegir el ancho
+# de banda. El estimador resultante, ¿parece que está demasiado suavizado?
+
+# Calculamos el ancho de banda mediante el método plug-in
+h_pi <- hpi(x=tmax)
+
+# Estimamos la densidad mediante el estimador núcleo (núcleo Gaussiano es el que usa por defecto)
+# y con el ancho de banda calculado por validación cruzada
+d2 <- density(
+ x=tmax,
+ bw=h_pi
+)
+
+# Representamos el estimador núcleo de la densidad
+{windows()
+ plot(
+  d2,
+  main = "Estimador núcleo, ancho de banda plug-in", xlab="Temperatura máxima", ylab="Densidad"
+ )}
+
+# EJ 1 C)
+# Aparte de estos dos valores de ancho de banda, ¿qué valor escogerías tú a mano para obtener
+# una estimación de la densidad que quizás mejore un poco las anteriores?
+
+# Para ver qué ancho de banda escogería, usamos la función manipulate::manipulate para crear
+# un gráfico interactivo que dependa del ancho de banda, incluyendo las estimaciones de la
+# densidad con los anchos de banda anteriormente calculado
+library(manipulate)
+manipulate(
+  {
+    plot(
+      density(x=tmax, bw=h),
+      main="Estimador núcleo, ancho de banda h",
+      xlab="Temperatura máxima", ylab="Densidad",
+      col="red", lwd=2
+    )
+    lines(density(x=tmax, bw=h_pi), col="black", lwd=2)
+    legend("topright",                     
+      legend=c("h", "h_vc"),
+      col=c("red", "black"),
+      lwd=2
+      )
+  },
+ h=slider(min=0.1, max=3, initial=h_pi)
+)
+
+# A la vista de cómo va variando el suavizado de la estimación a medida que cambia el ancho
+# de banda, creo que un buen ajuste podría considerarse con un ancho de banda de
+h_ojo <- 1.15
+
+# Representémoslo frente a los anteriores para comparar
+{
+ windows()
+ plot(
+  density(x=tmax, bw=h_ojo),
+  main="Estimador núcleo, ancho de banda h=1.15", xlab="Temperatura máxima", ylab="Densidad",
+  lwd=2,
+ )
+ # lines(density(x=tmax, bw=h_vc), col="red", lwd=2)
+ lines(density(x=tmax, bw=h_pi), col="blue", lwd=2)
+ legend("topright",                     
+  legend=c("h=1.15", "plug-in"),
+  col=c("black", "blue"),
+  lty=1,
+  lwd=2
+ )
+}
+
+# EJ 1 D)
+# A la vista de las distintas estimaciones de la densidad, describe la distribución de los datos
+# es decir, describe cómo están distribuidas las temperaturas máximas en la ciudad de Badajoz.
+# Por ejemplo, en base a esos datos de temperaturas máximas, ¿en cuántas categorías parecen estar
+# divididos los tipos de días de Badajoz?
+
+# A la vista de las distintas estimaciones de la densidad, se observa que la distribución de las
+# temperaturas máximas presenta una distribución bimodal, lo que indica que los días pueden
+# agruparse en dos categorías diferentes según la temperatura:
+# Primera: días más fríos, quizás de invierno/otoño, con datos concentrados en torno a 15 grados.
+# Segunda: días más calurosos, los de verano, con datos concentrados en torno a 35 grados celsius.
+# No se aprecian colas largas, por lo que las temperaturas extremas no son frecuentes.
+
+# FIN EJ 1
+
+# EJERCICIO 2
+
+# El conjunto de datos bonions del paquete sm contiene n=84 pares de observaciones de las
+# variables (Density, Yield), correspondientes a plantaciones de ciertos tipos de cebollas. Se
+# quiere estudiar cómo la cosecha de cada plantación (variable Yield, medida en gramos por
+# planta) depende de la concentración de plantas existentes por metro cuadrado (var. Density).
+
+# Cargamos los datos
+library(sm)
+bonions
+summary(bonions)
+
+# Antes de nada, representaré el regresograma para hacernos una idea de los datos que tenemos
+library(binsreg)
+binsreg(
+  y=Yield,
+  x=Density,
+  data=bonions
+)
+
+# En base al regresograma, se aprecia que a medida que aumenta la concentración de plantas
+# existentes por metro cuadrado, disminuye (logaritmo) la cosecha de cada plantación.
+
+# EJ 2 A)
+# Dibuja el estimador núcleo de la regresión, utilizando el ancho de banda sugerido por la
+# validación cruzada y también otros valores que tú selecciones visualmente. ¿Qué valor de ancho
+# de banda elegirías como más adecuado para estos datos?
+
+# Selector de ancho de banda mediante validación cruzada
+library(np)
+h_VC <- npregbw(Yield~Density, data=bonions, regtype="lc")
+h_VC$bw
+
+# Ahora representamos el estimador núcleo para la regresión utilizando el ancho de banda
+# calculado
+m_vc <- ksmooth(
+  x=bonions$Yield,
+  y=bonions$Density,
+  kernel="normal",
+  bandwidth=h_VC$bw
+)
+plot(m_vc)
+lines(m_vc, lwd=2, col="red")
+
+# Selector de ancho de banda de manera interactiva
+library(manipulate)
+manipulate(
+  {
+    plot(bonions$Yield, bonions$Density, col="black", lwd=2)
+    lines(
+      ksmooth(x=bonions$Yield, bonions$Density, kernel="normal", bandwidth=h),
+      col="red", lwd=2
+    )
+    lines(m_vc, lwd=2, col="blue")
+    legend(
+      x="topright",
+      legend=c("h","h_VC"),
+      col=c("red", "blue"),
+      lwd=2
+    )
+  },
+  h=slider(min=0.01, max=50, initial=2)
+)
+
+# En base del gráfico interactivo, yo elegiría como ancho de banda para estos datos de 15 más
+# o menos 
+
+# EJ 2 B)
+# Calcula el selector de ancho de banda tipo plug-in para el estimador lineal local, y pinta en
+# otro gráfico dicho estimador con ese ancho de banda.
+
+# Selector de ancho de banda tipo plug-in para el estimador lineal local
+library(KernSmooth)
+h_pi_ll <- dpill(bonions$Yield, bonions$Density)
+
+# Calculamos el estimador lineal local
+m_pi_ll <- ksmooth(
+  x=bonions$Yield,
+  y=bonions$Density,
+  kernel="normal",
+  bandwidth=h_pi_ll
+)
+
+# Lo representamos en un nuevo gráfico
+plot(m_pi_ll)
+lines(m_pi_ll, lwd=2, col="red")
+
+# EJ 2 C)
+# Pinta en otro gráfico el estimador por splines de suavizado.
+
+# Calculamos el estimador por splines de suavizado
+ss <- smooth.spline(
+  x=bonions$Density,
+  y=bonions$Yield
+)
+
+# Lo representamos
+plot(x=ss, lwd=2)
+lines(x=ss, col="blue", lwd=2)
+
+# EJ 2 D)
+# Comenta las similitudes y diferencias entre los tres estimadores de la regresión (estimador
+# núcleo, lineal local y por splines) obtenidos para estos datos. ¿Cuál crees que es el más
+# adecuado en este caso?
+
+# Representemos todos juntos para poder hacer una mejor comparación
+{
+  windows()
+  plot(bonions$Density, bonions$Yield, col="black", lwd=2)
+  lines(m_vc, lwd=2, col="red")
+  lines(m_pi_ll, lwd=2, col="darkgreen")
+  lines(x=ss, lwd=2, col="blue")
+  legend(
+    x="topright",
+    legend=c("constante", "lineal local", "splines"),
+    col=c("red", "darkgreen", "blue"),
+    lwd=2
+  )
+}
+
+# Los estimadores núcleo y lineal local son muy parecidos, ya que tienen similares anchos de
+# banda y el estimador mediante splines sería el que mejor se ajusta a este caso.
+
+# No necesario pero así esta mas completo
+manipulate(
+  {
+    plot(bonions$Density, bonions$Yield, col="black", lwd=2)
+    lines(ksmooth(x=bonions$Yield, bonions$Density, kernel="normal", bandwidth=h), col="purple", lwd=2)
+    lines(m_vc, lwd=2, col="red")
+    lines(m_pi_ll, lwd=2, col="darkgreen")
+    lines(x=ss, lwd=2, col="blue")
+    legend(
+      x="topright",
+      legend=c("constante", "lineal local", "splines"),
+      col=c("red", "darkgreen", "blue"),
+      lwd=2
+    )
+  },
+  h=slider(min=0.01, max=150, initial=2)
+)
+
+# FIN EJ 2
+
+# -----------------------------------------------------------------------
